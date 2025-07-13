@@ -12,16 +12,16 @@ datasource db {
 
 // User Management
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String
-  name          String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // Relations
-  decisions     AiDecision[]
-  sessions      UserSession[]
+  decisions AiDecision[]
+  sessions  UserSession[]
 
   @@map("users")
 }
@@ -33,48 +33,81 @@ model UserSession {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
-  
+
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_sessions")
 }
 
 // AI Decision Tracking
 model AiDecision {
-  id              String    @id @default(cuid())
-  userId          String
-  query           String
-  aiResponse      String
-  decisionHash    String    @unique
-  timestamp       DateTime  @default(now())
-  
+  id           String   @id @default(cuid())
+  userId       String
+  query        String
+  aiResponse   String
+  decisionHash String   @unique
+  timestamp    DateTime @default(now())
+
   // Blockchain Integration (Phase 2)
-  hcsTopicId      String?
-  hcsMessageId    String?
-  consensusTime   DateTime?
-  verified        Boolean   @default(false)
-  verifiedAt      DateTime?
-  
+  hcsTopicId    String?
+  hcsMessageId  String?
+  consensusTime DateTime?
+  verified      Boolean   @default(false)
+  verifiedAt    DateTime?
+
   // Metadata
-  processingTime  Int?      // milliseconds
-  tokenCount      Int?      // AI tokens used
-  
+  processingTime Int? // milliseconds
+  tokenCount     Int? // AI tokens used
+
   // Relations
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  HCSSubmission HCSSubmission[]
 
   @@map("ai_decisions")
 }
 
 // System Audit Log
 model AuditLog {
-  id          String   @id @default(cuid())
-  action      String
-  userId      String?
-  details     Json?
-  ipAddress   String?
-  userAgent   String?
-  timestamp   DateTime @default(now())
+  id        String   @id @default(cuid())
+  action    String
+  userId    String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+// Hedera HCS integration models
+model HCSSubmission {
+  id                  Int                @id @default(autoincrement())
+  ai_decision_id      String
+  topic_id            String // Hedera topic ID
+  decision_hash       String // SHA-256 hash
+  transaction_id      String? // Hedera transaction ID
+  consensus_timestamp DateTime?
+  submission_status   SubmissionStatus   @default(PENDING)
+  verification_status VerificationStatus @default(PENDING)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+
+  // Relationships
+  ai_decision AiDecision @relation(fields: [ai_decision_id], references: [id])
+
+  @@map("hcs_submissions")
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
 }
