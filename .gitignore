@@ -79,3 +79,15 @@ Desktop.ini
 
 # Vercel
 .vercel
+
+# Security - API Keys and Sensitive Data
+*.env
+.env.local
+.env.production
+.env.development
+node_USES.txt
+api-keys.txt
+credentials.txt
+**/secrets.txt
+**/private-keys.txt
+**/*USES.txt
