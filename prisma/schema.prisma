@@ -1,0 +1,80 @@
+// AI+HCS Verifiable Decisions Database Schema
+// Phase 1: AI Foundation with User Management
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  decisions     AiDecision[]
+  sessions      UserSession[]
+
+  @@map("users")
+}
+
+// User Sessions for JWT management
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+// AI Decision Tracking
+model AiDecision {
+  id              String    @id @default(cuid())
+  userId          String
+  query           String
+  aiResponse      String
+  decisionHash    String    @unique
+  timestamp       DateTime  @default(now())
+  
+  // Blockchain Integration (Phase 2)
+  hcsTopicId      String?
+  hcsMessageId    String?
+  consensusTime   DateTime?
+  verified        Boolean   @default(false)
+  verifiedAt      DateTime?
+  
+  // Metadata
+  processingTime  Int?      // milliseconds
+  tokenCount      Int?      // AI tokens used
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_decisions")
+}
+
+// System Audit Log
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  userId      String?
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+
+  @@map("audit_logs")
+}
