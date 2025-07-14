@@ -1,11 +1,10 @@
-﻿// src/app/api/ai/query/route.ts
+// src/app/api/ai/query/route.ts
 // COMPLETE WORKING VERSION - Mock AI + User Management + HCS Integration
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { hederaService } from '@/lib/hederaService';
-import { queryClaudeAI } from '@/lib/claude';
 
 const prisma = new PrismaClient();
 
@@ -38,8 +37,7 @@ export async function POST(request: NextRequest) {
     // TODO: Restore real Claude API once network issue is resolved
     console.log('[AI API] Using mock Claude response for testing HCS integration');
 
-    const claudeResponse = await queryClaudeAI(query_text);
-    const aiResponse = claudeResponse.content;
+    const aiResponse = `Mock AI Response: "${query_text}" - This is a test response to validate the HCS blockchain integration. The actual Claude API will be restored once network connectivity is resolved.`;
     const processingTime = Date.now() - startTime;
 
     console.log(`[AI API] Mock response generated in ${processingTime}ms`);
@@ -88,7 +86,7 @@ export async function POST(request: NextRequest) {
         decisionHash,
         timestamp,
         processingTime,
-        tokenCount: (claudeResponse.usage?.input_tokens || 0) + (claudeResponse.usage?.output_tokens || 0),
+        tokenCount: 50, // Mock token count for testing
         verified: false, // Will be updated after HCS submission
       }
     });
@@ -128,10 +126,10 @@ export async function POST(request: NextRequest) {
             }
           });
 
-          console.log(`[AI API] âœ… Decision ${savedDecision.id} successfully submitted to HCS: ${hcsResult.transactionId}`);
-          console.log(`[AI API] ðŸ”— View on HashScan: https://hashscan.io/testnet/transaction/${hcsResult.transactionId}`);
+          console.log(`[AI API] ✅ Decision ${savedDecision.id} successfully submitted to HCS: ${hcsResult.transactionId}`);
+          console.log(`[AI API] 🔗 View on HashScan: https://hashscan.io/testnet/transaction/${hcsResult.transactionId}`);
         } else {
-          console.error(`[AI API] âŒ HCS submission failed for decision ${savedDecision.id}:`, hcsResult.error);
+          console.error(`[AI API] ❌ HCS submission failed for decision ${savedDecision.id}:`, hcsResult.error);
 
           // Mark as verification failed but keep the decision
           await prisma.aiDecision.update({
@@ -183,7 +181,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    console.log(`[AI API] âœ… Response sent for decision ${savedDecision.id} - HCS submission running in background`);
+    console.log(`[AI API] ✅ Response sent for decision ${savedDecision.id} - HCS submission running in background`);
 
     return NextResponse.json(response);
 
@@ -205,4 +203,3 @@ export async function POST(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
-

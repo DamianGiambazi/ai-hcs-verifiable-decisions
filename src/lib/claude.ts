@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+﻿import Anthropic from '@anthropic-ai/sdk'
 
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY environment variable is required')
@@ -71,4 +71,35 @@ async function generateDecisionHash(data: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Simple wrapper function for route compatibility
+export async function queryClaudeAI(query: string) {
+  try {
+    const message = await claude.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: query
+      }]
+    });
+
+    const content = message.content[0];
+    if (content.type !== 'text') {
+      throw new Error('Unexpected response type from Claude API');
+    }
+
+    return {
+      content: content.text,
+      usage: {
+        input_tokens: message.usage.input_tokens,
+        output_tokens: message.usage.output_tokens
+      },
+      model: message.model
+    };
+  } catch (error) {
+    console.error('Claude API Error:', error);
+    throw new Error(`Claude AI processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
