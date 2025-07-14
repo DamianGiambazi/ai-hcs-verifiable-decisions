@@ -61,9 +61,9 @@ export async function POST(request: NextRequest) {
         console.log('[AI API] Creating test user for HCS testing');
         user = await prisma.user.create({
           data: {
-            username: 'test-user',
             email: 'test@example.com',
-            password_hash: 'test-hash-for-hcs-testing'
+            passwordHash: 'test-hash-for-hcs-testing',
+            name: 'Test User'
           }
         });
         console.log(`[AI API] Test user created with ID: ${user.id}`);

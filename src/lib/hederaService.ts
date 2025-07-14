@@ -20,11 +20,11 @@ interface HCSSubmissionResult {
 }
 
 interface AIDecisionData {
-    id: number;
+    id: string;      //  Correct - matches CUID
     query: string;
     aiResponse: string;
     decisionHash: string;
-    userId: number;
+    userId: string;  //  Correct - matches CUID
     timestamp: Date;
 }
 
@@ -88,7 +88,7 @@ export class HederaService {
 
             // Get transaction receipt
             const receipt = await response.getReceipt(this.client);
-            const consensusTimestamp = receipt.consensusTimestamp;
+            const consensusTimestamp = (receipt as any).consensusTimestamp || null;
 
             console.log(`[HCS] Success! Transaction ID: ${response.transactionId.toString()}`);
             console.log(`[HCS] Consensus timestamp: ${consensusTimestamp?.toString()}`);

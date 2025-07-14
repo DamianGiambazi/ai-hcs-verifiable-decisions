@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const decision = await prisma.aiDecision.findFirst({
             where: {
                 id: decisionId,
-                userId: userId // Ensure user owns the decision
+                userId: userId.toString() // Ensure user owns the decision
             }
         });
 

@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { hederaService } from '@/lib/hederaService';
+import { hederaService, HederaService } from '@/lib/hederaService';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
@@ -48,8 +48,8 @@ export async function GET(
         // Fetch decision from database
         const decision = await prisma.aiDecision.findFirst({
             where: {
-                id: decisionId,
-                userId: userId
+                id: decisionId.toString(),
+                userId: userId.toString()
             }
         });
 
@@ -99,7 +99,7 @@ export async function GET(
         }
 
         // Verify hash integrity
-        const hashValid = hederaService.constructor.validateDecisionHash(
+        const hashValid = HederaService.validateDecisionHash(
             decision.query,
             decision.aiResponse,
             decision.timestamp,
